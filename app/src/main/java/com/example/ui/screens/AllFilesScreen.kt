@@ -96,7 +96,7 @@ fun AllFilesScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${filteredList.size} items • Latest to oldest",
+                            text = "${filteredList.size} items",
                             color = TextGray,
                             fontSize = 13.sp
                         )

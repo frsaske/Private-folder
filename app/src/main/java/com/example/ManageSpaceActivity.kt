@@ -220,31 +220,12 @@ private fun ManageSpaceScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    Column {
-                        Text(
-                            text = if (isUnlocked) "Manage Space" else "Security Verification",
-                            color = TextWhite,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Shield,
-                                contentDescription = null,
-                                tint = AccentGreen,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = "Anti-Clear Data Protected",
-                                color = AccentGreen,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
+                    Text(
+                        text = if (isUnlocked) "Manage Space" else "Security Verification",
+                        color = TextWhite,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -256,7 +237,7 @@ private fun ManageSpaceScreen(
                 .background(PureBlack)
         ) {
             if (!isUnlocked) {
-                // PIN Lock screen to prevent unauthorized data clear from settings!
+                // PIN Lock screen
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -287,20 +268,10 @@ private fun ManageSpaceScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = "Enter Vault PIN",
+                            text = "Enter PIN",
                             color = TextWhite,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "Direct 'Clear Data' from device settings has been restricted by Anti-Clear Data protection. Enter PIN to manage space.",
-                            color = TextGray,
-                            fontSize = 13.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
 
                         Spacer(modifier = Modifier.height(28.dp))
@@ -346,7 +317,7 @@ private fun ManageSpaceScreen(
                                         refreshStats()
                                     } else {
                                         triggerHapticFeedback(context)
-                                        pinError = "Incorrect PIN. Vault access denied."
+                                        pinError = "Incorrect PIN"
                                         enteredPin = ""
                                     }
                                 }
@@ -383,49 +354,6 @@ private fun ManageSpaceScreen(
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                // Anti-Clear Data Info Banner
-                                OpenSourceCard {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        verticalAlignment = Alignment.Top
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(40.dp)
-                                                .clip(CircleShape)
-                                                .background(AccentGreen.copy(alpha = 0.15f)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Shield,
-                                                contentDescription = null,
-                                                tint = AccentGreen,
-                                                modifier = Modifier.size(22.dp)
-                                            )
-                                        }
-
-                                        Spacer(modifier = Modifier.width(14.dp))
-
-                                        Column {
-                                            Text(
-                                                text = "Anti-Clear Data Shield Active",
-                                                color = TextWhite,
-                                                fontSize = 15.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Spacer(modifier = Modifier.height(4.dp))
-                                            Text(
-                                                text = "Full app reset and PIN clearing from phone settings is disabled. You can safely free storage by deleting individual photos/videos or emptying the trash.",
-                                                color = TextGray,
-                                                fontSize = 12.sp,
-                                                lineHeight = 17.sp
-                                            )
-                                        }
-                                    }
-                                }
-
                                 // Vault Storage Usage Card
                                 Text(
                                     text = "STORAGE BREAKDOWN",

@@ -146,7 +146,7 @@ fun FoldersScreen(
                     query = searchQuery,
                     onQueryChange = { searchQuery = it },
                     onClear = { searchQuery = "" },
-                    placeholder = "Search in vault folders..."
+                    placeholder = "Search folders..."
                 )
             }
         },

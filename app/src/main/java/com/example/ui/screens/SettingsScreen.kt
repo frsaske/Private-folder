@@ -131,12 +131,11 @@ fun SettingsScreen(
                 }
             }
 
-            // APP INFO Section (Matching user screenshot!)
+            // APP INFO Section
             SettingsSectionHeader(title = "APP INFO")
             OpenSourceCard {
                 OpenSourceSettingsRow(
                     title = "About app",
-                    subtitle = "Creator message & details",
                     leadingIcon = Icons.Default.Info,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
@@ -152,12 +151,11 @@ fun SettingsScreen(
                 )
             }
 
-            // SECURITY & RECOVERY (Privacy First - Email hidden!)
+            // SECURITY Section
             SettingsSectionHeader(title = "SECURITY")
             OpenSourceCard {
                 OpenSourceSettingsRow(
                     title = "Security Recovery Email",
-                    subtitle = "Configured for PIN recovery (Protected)",
                     leadingIcon = Icons.Default.Security,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
@@ -174,7 +172,6 @@ fun SettingsScreen(
 
                 OpenSourceSettingsRow(
                     title = "Change Passcode",
-                    subtitle = "Update your 4-digit PIN",
                     leadingIcon = Icons.Default.Key,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
@@ -191,31 +188,15 @@ fun SettingsScreen(
 
                 OpenSourceSettingsRow(
                     title = "Anti-Clear Data Protection",
-                    subtitle = "Settings Clear Data blocked • Open Space Manager",
                     leadingIcon = Icons.Default.Shield,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .background(AccentGreen.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-                                    .padding(horizontal = 8.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = "Active",
-                                    color = AccentGreen,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null,
-                                tint = TextGray,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                            contentDescription = null,
+                            tint = TextGray,
+                            modifier = Modifier.size(14.dp)
+                        )
                     },
                     showDivider = true,
                     onClick = {
@@ -226,7 +207,6 @@ fun SettingsScreen(
 
                 OpenSourceSettingsRow(
                     title = "Move from Phone Gallery",
-                    subtitle = "Auto-delete originals from gallery on import",
                     leadingIcon = Icons.Default.DriveFileMove,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
@@ -257,7 +237,6 @@ fun SettingsScreen(
 
                 OpenSourceSettingsRow(
                     title = "Recycle Bin",
-                    subtitle = "Recover deleted photos & videos (30 days)",
                     leadingIcon = Icons.Default.Delete,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
@@ -290,12 +269,11 @@ fun SettingsScreen(
                 )
             }
 
-            // DEVELOPER & CONTACT Section (Matching user screenshot!)
+            // DEVELOPER & CONTACT Section
             SettingsSectionHeader(title = "DEVELOPER & CONTACT")
             OpenSourceCard {
                 OpenSourceSettingsRow(
                     title = "Developer: sasuke",
-                    subtitle = "Sasuke.winx@gmail.com",
                     leadingIcon = Icons.Default.Person,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
@@ -317,7 +295,6 @@ fun SettingsScreen(
 
                 OpenSourceSettingsRow(
                     title = "Contact Developer",
-                    subtitle = "Sasuke.winx@gmail.com",
                     leadingIcon = Icons.Default.Mail,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
