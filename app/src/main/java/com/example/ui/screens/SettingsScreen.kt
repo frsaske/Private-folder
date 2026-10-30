@@ -53,6 +53,7 @@ fun SettingsScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     var showSecurityEmailDialog by remember { mutableStateOf(false) }
     var showChangePinDialog by remember { mutableStateOf(false) }
+    var isAutoDeleteEnabled by remember { mutableStateOf(securityPrefs.isAutoDeleteFromGalleryEnabled) }
 
     fun copyToClipboard(label: String, text: String) {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -186,6 +187,72 @@ fun SettingsScreen(
                     },
                     showDivider = true,
                     onClick = { showChangePinDialog = true }
+                )
+
+                OpenSourceSettingsRow(
+                    title = "Anti-Clear Data Protection",
+                    subtitle = "Settings Clear Data blocked • Open Space Manager",
+                    leadingIcon = Icons.Default.Shield,
+                    iconBackgroundColor = DarkPillBg,
+                    trailingContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .background(AccentGreen.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "Active",
+                                    color = AccentGreen,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null,
+                                tint = TextGray,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    },
+                    showDivider = true,
+                    onClick = {
+                        val intent = Intent(context, com.example.ManageSpaceActivity::class.java)
+                        context.startActivity(intent)
+                    }
+                )
+
+                OpenSourceSettingsRow(
+                    title = "Move from Phone Gallery",
+                    subtitle = "Auto-delete originals from gallery on import",
+                    leadingIcon = Icons.Default.DriveFileMove,
+                    iconBackgroundColor = DarkPillBg,
+                    trailingContent = {
+                        Switch(
+                            checked = isAutoDeleteEnabled,
+                            onCheckedChange = { checked ->
+                                triggerHapticFeedback(context)
+                                isAutoDeleteEnabled = checked
+                                securityPrefs.isAutoDeleteFromGalleryEnabled = checked
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = PureBlack,
+                                checkedTrackColor = TextWhite,
+                                uncheckedThumbColor = TextGray,
+                                uncheckedTrackColor = DarkPillBg
+                            ),
+                            modifier = Modifier.testTag("auto_delete_from_gallery_switch")
+                        )
+                    },
+                    showDivider = true,
+                    onClick = {
+                        triggerHapticFeedback(context)
+                        val newValue = !isAutoDeleteEnabled
+                        isAutoDeleteEnabled = newValue
+                        securityPrefs.isAutoDeleteFromGalleryEnabled = newValue
+                    }
                 )
 
                 OpenSourceSettingsRow(

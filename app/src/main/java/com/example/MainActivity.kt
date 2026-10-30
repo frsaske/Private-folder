@@ -1,21 +1,28 @@
 package com.example
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.FragmentActivity
 import com.example.ui.Screen
 import com.example.ui.VaultViewModel
@@ -97,6 +104,35 @@ fun VaultApp(viewModel: VaultViewModel) {
     val isImporting by viewModel.isImporting.collectAsState()
     val importProgress by viewModel.importProgress.collectAsState()
     val pendingSharedUris by viewModel.pendingSharedUris.collectAsState()
+    val context = LocalContext.current
+    val deleteConsent by viewModel.deleteConsentIntentSender.collectAsState()
+    val movedMessage by viewModel.movedFromGalleryMessage.collectAsState()
+
+    val deleteConsentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        viewModel.clearDeleteConsent()
+        if (result.resultCode == Activity.RESULT_OK) {
+            Toast.makeText(context, "Original media removed from phone gallery", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(deleteConsent) {
+        deleteConsent?.let { sender ->
+            try {
+                deleteConsentLauncher.launch(IntentSenderRequest.Builder(sender).build())
+            } catch (_: Exception) {
+                viewModel.clearDeleteConsent()
+            }
+        }
+    }
+
+    LaunchedEffect(movedMessage) {
+        movedMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            viewModel.clearMovedMessage()
+        }
+    }
 
     val showBottomBar = isUnlocked && (
         currentScreen == Screen.FOLDERS ||

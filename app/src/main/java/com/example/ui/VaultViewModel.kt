@@ -1,9 +1,11 @@
 package com.example.ui
 
 import android.app.Application
+import android.content.IntentSender
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.data.DeleteSourceResult
 import com.example.data.FolderEntity
 import com.example.data.FolderWithItemCount
 import com.example.data.MediaEntity
@@ -73,6 +75,20 @@ class VaultViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _pendingSharedUris = MutableStateFlow<List<Uri>?>(null)
     val pendingSharedUris: StateFlow<List<Uri>?> = _pendingSharedUris.asStateFlow()
+
+    private val _deleteConsentIntentSender = MutableStateFlow<IntentSender?>(null)
+    val deleteConsentIntentSender: StateFlow<IntentSender?> = _deleteConsentIntentSender.asStateFlow()
+
+    private val _movedFromGalleryMessage = MutableStateFlow<String?>(null)
+    val movedFromGalleryMessage: StateFlow<String?> = _movedFromGalleryMessage.asStateFlow()
+
+    fun clearDeleteConsent() {
+        _deleteConsentIntentSender.value = null
+    }
+
+    fun clearMovedMessage() {
+        _movedFromGalleryMessage.value = null
+    }
 
     init {
         // Collect folders
@@ -234,7 +250,7 @@ class VaultViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isImporting.value = true
             _importProgress.value = Pair(0, uris.size)
-            repository.importUrisToFolder(
+            val imported = repository.importUrisToFolder(
                 folderId = folderId,
                 uris = uris,
                 onProgress = { cur, tot ->
@@ -243,6 +259,17 @@ class VaultViewModel(application: Application) : AndroidViewModel(application) {
             )
             _isImporting.value = false
             _pendingSharedUris.value = null
+
+            if (imported.isNotEmpty() && securityPrefs.isAutoDeleteFromGalleryEnabled) {
+                when (val result = repository.deleteSourceUris(uris)) {
+                    is DeleteSourceResult.ConsentNeeded -> {
+                        _deleteConsentIntentSender.value = result.intentSender
+                    }
+                    is DeleteSourceResult.Done -> {
+                        _movedFromGalleryMessage.value = "Original media removed from phone gallery"
+                    }
+                }
+            }
         }
     }
 

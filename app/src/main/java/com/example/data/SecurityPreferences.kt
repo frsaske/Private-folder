@@ -33,6 +33,14 @@ class SecurityPreferences(context: Context) {
         get() = prefs.getBoolean(KEY_LOCK_APP_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_LOCK_APP_ENABLED, value).apply()
 
+    var isAntiClearDataEnabled: Boolean
+        get() = prefs.getBoolean("anti_clear_data_enabled", true)
+        set(value) = prefs.edit().putBoolean("anti_clear_data_enabled", value).apply()
+
+    var isAutoDeleteFromGalleryEnabled: Boolean
+        get() = prefs.getBoolean("auto_delete_from_gallery", true)
+        set(value) = prefs.edit().putBoolean("auto_delete_from_gallery", value).apply()
+
     fun setPin(pin: String) {
         val hash = hashString(pin)
         prefs.edit()

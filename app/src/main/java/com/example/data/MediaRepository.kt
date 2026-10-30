@@ -1,9 +1,15 @@
 package com.example.data
 
+import android.app.RecoverableSecurityException
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.Context
+import android.content.IntentSender
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build
+import android.provider.DocumentsContract
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
@@ -12,6 +18,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
+
+sealed class DeleteSourceResult {
+    object Done : DeleteSourceResult()
+    data class ConsentNeeded(val intentSender: IntentSender) : DeleteSourceResult()
+}
 
 class MediaRepository(private val context: Context) {
     private val db = VaultDatabase.getDatabase(context)
@@ -255,5 +266,114 @@ class MediaRepository(private val context: Context) {
             }
         }
         freedBytes
+    }
+
+    suspend fun deleteSourceUris(uris: List<Uri>): DeleteSourceResult = withContext(Dispatchers.IO) {
+        if (uris.isEmpty()) return@withContext DeleteSourceResult.Done
+
+        val mediaStoreUris = mutableListOf<Uri>()
+
+        for (uri in uris) {
+            val resolved = resolveMediaStoreUri(uri)
+            if (resolved != null && resolved.authority == MediaStore.AUTHORITY) {
+                mediaStoreUris.add(resolved)
+            } else {
+                try {
+                    context.contentResolver.delete(uri, null, null)
+                } catch (_: Exception) {
+                }
+            }
+        }
+
+        if (mediaStoreUris.isEmpty()) {
+            return@withContext DeleteSourceResult.Done
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return@withContext try {
+                val pendingIntent = MediaStore.createDeleteRequest(context.contentResolver, mediaStoreUris)
+                DeleteSourceResult.ConsentNeeded(pendingIntent.intentSender)
+            } catch (e: Exception) {
+                directDelete(mediaStoreUris)
+                DeleteSourceResult.Done
+            }
+        }
+
+        for (uri in mediaStoreUris) {
+            try {
+                context.contentResolver.delete(uri, null, null)
+            } catch (e: SecurityException) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && e is RecoverableSecurityException) {
+                    return@withContext DeleteSourceResult.ConsentNeeded(e.userAction.actionIntent.intentSender)
+                }
+            } catch (_: Exception) {
+            }
+        }
+
+        DeleteSourceResult.Done
+    }
+
+    private fun directDelete(uris: List<Uri>) {
+        for (uri in uris) {
+            try {
+                context.contentResolver.delete(uri, null, null)
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    private fun resolveMediaStoreUri(uri: Uri): Uri? {
+        val uriStr = uri.toString()
+        if (uriStr.startsWith("content://media/external/")) {
+            return uri
+        }
+
+        try {
+            context.contentResolver.query(uri, arrayOf(MediaStore.MediaColumns._ID), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val idCol = cursor.getColumnIndex(MediaStore.MediaColumns._ID)
+                    if (idCol >= 0) {
+                        val id = cursor.getLong(idCol)
+                        val mimeType = context.contentResolver.getType(uri) ?: ""
+                        val baseUri = if (mimeType.startsWith("video")) {
+                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                        } else {
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                        }
+                        return ContentUris.withAppendedId(baseUri, id)
+                    }
+                }
+            }
+        } catch (_: Exception) {
+        }
+
+        val id = uri.lastPathSegment?.toLongOrNull()
+        if (id != null) {
+            val mimeType = context.contentResolver.getType(uri) ?: ""
+            val baseUri = if (mimeType.startsWith("video")) {
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            } else {
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            }
+            return ContentUris.withAppendedId(baseUri, id)
+        }
+
+        if (DocumentsContract.isDocumentUri(context, uri)) {
+            val docId = DocumentsContract.getDocumentId(uri)
+            if (docId != null && docId.contains(":")) {
+                val parts = docId.split(":")
+                val mediaId = parts.getOrNull(1)?.toLongOrNull()
+                if (mediaId != null) {
+                    val baseUri = if (parts[0].equals("video", ignoreCase = true)) {
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                    } else {
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    }
+                    return ContentUris.withAppendedId(baseUri, mediaId)
+                }
+            }
+        }
+
+        return if (uri.authority == MediaStore.AUTHORITY) uri else null
     }
 }
