@@ -122,7 +122,6 @@ private fun KeypadNumberButton(
                 detectTapGestures(
                     onPress = {
                         isPressed = true
-                        triggerHapticFeedback(context)
                         tryAwaitRelease()
                         isPressed = false
                     },
@@ -147,7 +146,6 @@ private fun KeypadIconButton(
     testTag: String,
     content: @Composable () -> Unit
 ) {
-    val context = LocalContext.current
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.88f else 1.0f,
@@ -163,7 +161,6 @@ private fun KeypadIconButton(
                 detectTapGestures(
                     onPress = {
                         isPressed = true
-                        triggerHapticFeedback(context)
                         tryAwaitRelease()
                         isPressed = false
                     },

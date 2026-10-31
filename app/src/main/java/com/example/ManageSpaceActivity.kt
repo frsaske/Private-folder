@@ -221,10 +221,10 @@ private fun ManageSpaceScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = if (isUnlocked) "Manage Space" else "Security Verification",
+                        text = "Manage Space",
                         color = TextWhite,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }
@@ -241,7 +241,7 @@ private fun ManageSpaceScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -249,32 +249,32 @@ private fun ManageSpaceScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(top = 16.dp)
                     ) {
-                        Box(
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.app_icon),
+                            contentDescription = "App Icon",
                             modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(DarkCardBg)
-                                .border(1.dp, DarkBorder, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = TextWhite,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "Enter PIN",
-                            color = TextWhite,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(12.dp))
                         )
 
-                        Spacer(modifier = Modifier.height(28.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Text(
+                            text = "Private Folder",
+                            color = TextWhite,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Enter 4-digit PIN",
+                            color = TextGray,
+                            fontSize = 13.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         // PIN Dots
                         Row(

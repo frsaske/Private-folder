@@ -14,6 +14,9 @@ data class FolderWithItemCount(
     val coverUri: String?,
     val colorHex: String,
     val iconName: String,
+    val isPinned: Boolean,
+    val isUltraPrivate: Boolean,
+    val space: String,
     val isDeleted: Boolean,
     val deletedAt: Long?,
     val createdAt: Long,
@@ -30,11 +33,14 @@ interface FolderDao {
                COALESCE(NULLIF(f.coverUri, ''), (SELECT filePath FROM media_items WHERE folderId = f.id AND isDeleted = 0 ORDER BY addedAt DESC LIMIT 1)) as latestThumbnail
         FROM folders f
         LEFT JOIN media_items m ON f.id = m.folderId AND m.isDeleted = 0
-        WHERE f.isDeleted = 0
+        WHERE f.isDeleted = 0 AND f.space = :space
         GROUP BY f.id
-        ORDER BY f.updatedAt DESC
+        ORDER BY f.isUltraPrivate DESC, f.isPinned DESC, f.updatedAt DESC
     """)
-    fun getAllFoldersWithCount(): Flow<List<FolderWithItemCount>>
+    fun getFoldersForSpaceWithCount(space: String = "MAIN"): Flow<List<FolderWithItemCount>>
+
+    @Query("UPDATE folders SET isPinned = :isPinned WHERE id = :folderId")
+    suspend fun updateFolderPinned(folderId: String, isPinned: Boolean)
 
     @Query("SELECT * FROM folders WHERE isDeleted = 1 ORDER BY deletedAt DESC")
     fun getRecycleBinFolders(): Flow<List<FolderEntity>>

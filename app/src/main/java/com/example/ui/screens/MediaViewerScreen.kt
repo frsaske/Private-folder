@@ -89,6 +89,7 @@ fun MediaViewerScreen(
                 if (item.isVideo) {
                     VideoViewerItem(
                         item = item,
+                        isCurrentPage = pagerState.currentPage == page,
                         onTap = { showControls = !showControls }
                     )
                 } else {
@@ -243,25 +244,34 @@ private fun ZoomablePhotoViewerItem(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onDoubleTap = {
-                        scale = if (scale > 1f) 1f else 2.5f
-                        offsetX = 0f
-                        offsetY = 0f
+                        if (scale > 1.2f) {
+                            scale = 1f
+                            offsetX = 0f
+                            offsetY = 0f
+                        } else {
+                            scale = 2.5f
+                        }
                     },
                     onTap = { onTap() }
                 )
             }
-            .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    scale = (scale * zoom).coerceIn(1f, 5f)
-                    if (scale > 1f) {
-                        offsetX += pan.x
-                        offsetY += pan.y
-                    } else {
-                        offsetX = 0f
-                        offsetY = 0f
+            .then(
+                if (scale > 1.05f) {
+                    Modifier.pointerInput(scale) {
+                        detectTransformGestures { _, pan, zoom, _ ->
+                            scale = (scale * zoom).coerceIn(1f, 5f)
+                            if (scale > 1.05f) {
+                                offsetX += pan.x
+                                offsetY += pan.y
+                            } else {
+                                scale = 1f
+                                offsetX = 0f
+                                offsetY = 0f
+                            }
+                        }
                     }
-                }
-            },
+                } else Modifier
+            ),
         contentAlignment = Alignment.Center
     ) {
         AsyncImage(
@@ -283,16 +293,35 @@ private fun ZoomablePhotoViewerItem(
 @Composable
 private fun VideoViewerItem(
     item: MediaEntity,
+    isCurrentPage: Boolean,
     onTap: () -> Unit
 ) {
-    var isPlaying by remember { mutableStateOf(false) }
+    var videoViewRef by remember { mutableStateOf<VideoView?>(null) }
+
+    DisposableEffect(isCurrentPage) {
+        if (isCurrentPage) {
+            videoViewRef?.start()
+        } else {
+            videoViewRef?.pause()
+        }
+        onDispose {
+            videoViewRef?.stopPlayback()
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onTap = { onTap() }
+                    onTap = {
+                        if (videoViewRef?.isPlaying == true) {
+                            videoViewRef?.pause()
+                        } else {
+                            videoViewRef?.start()
+                        }
+                        onTap()
+                    }
                 )
             },
         contentAlignment = Alignment.Center
@@ -301,12 +330,20 @@ private fun VideoViewerItem(
             factory = { context ->
                 VideoView(context).apply {
                     setVideoPath(item.filePath)
-                    val mediaController = MediaController(context)
-                    mediaController.setAnchorView(this)
-                    setMediaController(mediaController)
                     setOnPreparedListener { mp ->
                         mp.isLooping = true
+                        if (isCurrentPage) {
+                            start()
+                        }
                     }
+                    videoViewRef = this
+                }
+            },
+            update = { view ->
+                if (isCurrentPage) {
+                    if (!view.isPlaying) view.start()
+                } else {
+                    if (view.isPlaying) view.pause()
                 }
             },
             modifier = Modifier.fillMaxSize()

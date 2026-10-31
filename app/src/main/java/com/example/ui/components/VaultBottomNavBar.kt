@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Settings
@@ -57,17 +59,17 @@ fun VaultBottomNavBar(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Home / Folders Tab
+            // Folders Tab
             NavBarItem(
                 selected = currentScreen == Screen.FOLDERS,
-                label = "Home",
-                selectedIcon = Icons.Default.Home,
-                unselectedIcon = Icons.Outlined.Home,
+                label = "Folders",
+                selectedIcon = Icons.Filled.Folder,
+                unselectedIcon = Icons.Outlined.Folder,
                 onClick = {
                     triggerHapticFeedback(context)
                     onTabSelected(Screen.FOLDERS)
                 },
-                testTag = "bottom_nav_home"
+                testTag = "bottom_nav_folders"
             )
 
             // Center Tab: All Files (Latest to oldest photos and videos)

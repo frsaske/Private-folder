@@ -126,7 +126,7 @@ fun GalleryScreen(
                                 modifier = Modifier.size(13.dp)
                             )
                             Text(
-                                text = "Pictures/$folderName • ${mediaList.size} items",
+                                text = "private-storage/$folderName • ${mediaList.size} items",
                                 color = TextGray,
                                 fontSize = 12.sp
                             )
@@ -303,10 +303,10 @@ fun GalleryScreen(
                 )
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    columns = GridCells.Fixed(4),
+                    contentPadding = PaddingValues(3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     itemsIndexed(sortedList, key = { _, item -> item.id }) { index, item ->

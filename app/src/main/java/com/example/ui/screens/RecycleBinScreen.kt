@@ -373,13 +373,13 @@ fun RecycleBinScreen(
 
                         item {
                             LazyVerticalGrid(
-                                columns = GridCells.Fixed(3),
+                                columns = GridCells.Fixed(4),
                                 contentPadding = PaddingValues(horizontal = 14.dp),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                                verticalArrangement = Arrangement.spacedBy(3.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .heightIn(max = 1000.dp)
+                                    .heightIn(max = 1200.dp)
                             ) {
                                 items(deletedItems, key = { it.id }) { item ->
                                     val isSelected = selectedIds.contains(item.id)

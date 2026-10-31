@@ -13,20 +13,20 @@ interface MediaDao {
     @Query("SELECT * FROM media_items WHERE folderId = :folderId AND isDeleted = 0 ORDER BY addedAt DESC")
     fun getMediaForFolder(folderId: String): Flow<List<MediaEntity>>
 
-    @Query("SELECT * FROM media_items WHERE isDeleted = 0 ORDER BY addedAt DESC")
-    fun getAllActiveMedia(): Flow<List<MediaEntity>>
+    @Query("SELECT * FROM media_items WHERE isDeleted = 0 AND space = :space ORDER BY addedAt DESC")
+    fun getAllActiveMedia(space: String = "MAIN"): Flow<List<MediaEntity>>
 
-    @Query("SELECT * FROM media_items WHERE isDeleted = 0 AND isVideo = 0 ORDER BY addedAt DESC")
-    fun getAllActivePhotos(): Flow<List<MediaEntity>>
+    @Query("SELECT * FROM media_items WHERE isDeleted = 0 AND isVideo = 0 AND space = :space ORDER BY addedAt DESC")
+    fun getAllActivePhotos(space: String = "MAIN"): Flow<List<MediaEntity>>
 
-    @Query("SELECT * FROM media_items WHERE isDeleted = 0 AND isVideo = 1 ORDER BY addedAt DESC")
-    fun getAllActiveVideos(): Flow<List<MediaEntity>>
+    @Query("SELECT * FROM media_items WHERE isDeleted = 0 AND isVideo = 1 AND space = :space ORDER BY addedAt DESC")
+    fun getAllActiveVideos(space: String = "MAIN"): Flow<List<MediaEntity>>
 
-    @Query("SELECT * FROM media_items WHERE isDeleted = 1 ORDER BY deletedAt DESC")
-    fun getRecycleBinMedia(): Flow<List<MediaEntity>>
+    @Query("SELECT * FROM media_items WHERE isDeleted = 1 AND space = :space ORDER BY deletedAt DESC")
+    fun getRecycleBinMedia(space: String = "MAIN"): Flow<List<MediaEntity>>
 
-    @Query("SELECT COUNT(*) FROM media_items WHERE isDeleted = 1")
-    fun getRecycleBinCount(): Flow<Int>
+    @Query("SELECT COUNT(*) FROM media_items WHERE isDeleted = 1 AND space = :space")
+    fun getRecycleBinCount(space: String = "MAIN"): Flow<Int>
 
     @Query("SELECT * FROM media_items WHERE id = :id LIMIT 1")
     suspend fun getMediaById(id: String): MediaEntity?

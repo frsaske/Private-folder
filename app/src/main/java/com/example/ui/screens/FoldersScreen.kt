@@ -8,6 +8,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,13 +20,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.CreateNewFolder
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,16 +34,16 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.R
 import com.example.data.FolderWithItemCount
 import com.example.ui.components.OpenSourcePillSearchBar
-import com.example.ui.components.OpenSourcePressButton
 import com.example.ui.components.triggerHapticFeedback
 import com.example.ui.theme.*
 import java.io.File
@@ -57,15 +53,19 @@ import java.io.File
 fun FoldersScreen(
     folders: List<FolderWithItemCount>,
     onFolderClick: (FolderWithItemCount) -> Unit,
+    onUltraPrivateClick: () -> Unit,
     onCreateFolder: (name: String, coverUri: String?) -> Unit,
     onSetFolderCover: (folderId: String, coverUri: String?) -> Unit,
+    onTogglePinFolder: (folderId: String, isPinned: Boolean) -> Unit,
     onDeleteFolder: (String) -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var isSearchVisible by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var showCreateSheet by remember { mutableStateOf(false) }
+    var selectedFolderForOptions by remember { mutableStateOf<FolderWithItemCount?>(null) }
     var folderForCoverSelection by remember { mutableStateOf<FolderWithItemCount?>(null) }
     var folderToDelete by remember { mutableStateOf<FolderWithItemCount?>(null) }
 
@@ -91,34 +91,41 @@ fun FoldersScreen(
                     .fillMaxWidth()
                     .background(PureBlack)
                     .statusBarsPadding()
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                    .padding(horizontal = 20.dp, vertical = 6.dp)
             ) {
-                // Top Header matching PinterestDL screenshot: Title on left, "sasuke" + Settings on right!
+                // Header: Folders title, search icon toggle, settings icon
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Private Folder",
+                        text = "Folders",
                         color = TextWhite,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.5).sp
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
 
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "sasuke",
-                            color = TextGray,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Monospace,
-                            letterSpacing = 1.sp
-                        )
+                        IconButton(
+                            onClick = {
+                                isSearchVisible = !isSearchVisible
+                                if (!isSearchVisible) searchQuery = ""
+                            },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("folders_search_toggle_button")
+                        ) {
+                            Icon(
+                                imageVector = if (isSearchVisible) Icons.Default.Close else Icons.Default.Search,
+                                contentDescription = "Search",
+                                tint = TextWhite,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
 
                         IconButton(
                             onClick = {
@@ -133,21 +140,28 @@ fun FoldersScreen(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
                                 tint = TextWhite,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Pill Search Bar matching PinterestDL screenshot
-                OpenSourcePillSearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    onClear = { searchQuery = "" },
-                    placeholder = "Search folders..."
-                )
+                // Smoothly expandable search bar
+                AnimatedVisibility(
+                    visible = isSearchVisible,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        OpenSourcePillSearchBar(
+                            query = searchQuery,
+                            onQueryChange = { searchQuery = it },
+                            onClear = { searchQuery = "" },
+                            placeholder = "Search folders..."
+                        )
+                    }
+                }
             }
         },
         floatingActionButton = {
@@ -160,13 +174,13 @@ fun FoldersScreen(
                 contentColor = PureBlack,
                 shape = CircleShape,
                 modifier = Modifier
-                    .padding(bottom = 12.dp, end = 12.dp)
+                    .padding(bottom = 8.dp, end = 8.dp)
                     .testTag("create_folder_fab")
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Create Folder",
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             }
         },
@@ -188,7 +202,7 @@ fun FoldersScreen(
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxSize()
@@ -198,21 +212,128 @@ fun FoldersScreen(
                             folder = folder,
                             onClick = {
                                 triggerHapticFeedback(context)
-                                onFolderClick(folder)
+                                if (folder.isUltraPrivate) {
+                                    onUltraPrivateClick()
+                                } else {
+                                    onFolderClick(folder)
+                                }
                             },
                             onLongClick = {
-                                triggerHapticFeedback(context)
-                                folderToDelete = folder
-                            },
-                            onSetCoverClick = {
-                                triggerHapticFeedback(context)
-                                folderForCoverSelection = folder
-                                coverPickerLauncher.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                )
+                                if (!folder.isUltraPrivate) {
+                                    triggerHapticFeedback(context)
+                                    selectedFolderForOptions = folder
+                                }
                             }
                         )
                     }
+                }
+            }
+        }
+    }
+
+    // Options BottomSheet on Long Press (Pin, Set Cover, Delete)
+    if (selectedFolderForOptions != null) {
+        val folder = selectedFolderForOptions!!
+        ModalBottomSheet(
+            onDismissRequest = { selectedFolderForOptions = null },
+            containerColor = DarkCardBg,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = DarkBorder) },
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 28.dp)
+            ) {
+                Text(
+                    text = folder.name,
+                    color = TextWhite,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                // Pin / Unpin
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            val newPinned = !folder.isPinned
+                            onTogglePinFolder(folder.id, newPinned)
+                            selectedFolderForOptions = null
+                        }
+                        .padding(vertical = 12.dp, horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (folder.isPinned) Icons.Outlined.PushPin else Icons.Filled.PushPin,
+                        contentDescription = null,
+                        tint = TextWhite,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Text(
+                        text = if (folder.isPinned) "Unpin from top" else "Pin to top",
+                        color = TextWhite,
+                        fontSize = 14.sp
+                    )
+                }
+
+                // Set Cover
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            folderForCoverSelection = folder
+                            selectedFolderForOptions = null
+                            coverPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                        .padding(vertical = 12.dp, horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Image,
+                        contentDescription = null,
+                        tint = TextWhite,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Text(
+                        text = "Set cover",
+                        color = TextWhite,
+                        fontSize = 14.sp
+                    )
+                }
+
+                // Delete Folder
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            folderToDelete = folder
+                            selectedFolderForOptions = null
+                        }
+                        .padding(vertical = 12.dp, horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = null,
+                        tint = AccentRed,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Text(
+                        text = "Delete folder",
+                        color = AccentRed,
+                        fontSize = 14.sp
+                    )
                 }
             }
         }
@@ -232,34 +353,49 @@ fun FoldersScreen(
         AlertDialog(
             onDismissRequest = { folderToDelete = null },
             containerColor = DarkCardBg,
+            shape = RoundedCornerShape(16.dp),
             title = {
                 Text(
                     text = "Delete \"${folderToDelete?.name}\"?",
                     color = TextWhite,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
                 )
             },
             text = {
                 Text(
-                    text = "All media items inside will be safely placed in the Recycle Bin.",
+                    text = "Items inside will be moved to Recycle Bin.",
                     color = TextGray,
-                    fontSize = 14.sp
+                    fontSize = 13.sp
                 )
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         folderToDelete?.let { onDeleteFolder(it.id) }
                         folderToDelete = null
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AccentRed,
+                        contentColor = TextWhite
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
                 ) {
-                    Text("Delete", color = AccentRed, fontWeight = FontWeight.Bold)
+                    Text("Delete", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { folderToDelete = null }) {
-                    Text("Cancel", color = TextWhite)
+                Button(
+                    onClick = { folderToDelete = null },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DarkPillBg,
+                        contentColor = TextWhite
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
+                ) {
+                    Text("Cancel", fontSize = 13.sp)
                 }
             }
         )
@@ -270,12 +406,11 @@ fun FoldersScreen(
 private fun FolderGridItem(
     folder: FolderWithItemCount,
     onClick: () -> Unit,
-    onLongClick: () -> Unit,
-    onSetCoverClick: () -> Unit
+    onLongClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1.0f,
+        targetValue = if (isPressed) 0.94f else 1.0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
         label = "folder_scale"
     )
@@ -302,21 +437,19 @@ private fun FolderGridItem(
             modifier = Modifier
                 .aspectRatio(1f)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(18.dp))
                 .background(DarkCardBg)
-                .border(1.dp, DarkBorder.copy(alpha = 0.5f), RoundedCornerShape(20.dp)),
+                .border(1.dp, DarkBorder.copy(alpha = 0.5f), RoundedCornerShape(18.dp)),
             contentAlignment = Alignment.Center
         ) {
-            // If custom cover or latest thumbnail exists, show it! Otherwise show folder icon!
-            if (folder.latestThumbnail != null && (folder.latestThumbnail.startsWith("content://") || File(folder.latestThumbnail).exists())) {
-                val model = if (folder.latestThumbnail.startsWith("content://")) Uri.parse(folder.latestThumbnail) else File(folder.latestThumbnail)
-                AsyncImage(
-                    model = model,
+            if (folder.isUltraPrivate) {
+                // Ultra Private folder has the official app icon
+                Image(
+                    painter = painterResource(id = R.drawable.app_icon),
                     contentDescription = folder.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                // Bottom gradient scrim
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -326,11 +459,28 @@ private fun FolderGridItem(
                             )
                         )
                 )
+            } else if (folder.latestThumbnail != null && (folder.latestThumbnail.startsWith("content://") || File(folder.latestThumbnail).exists())) {
+                val model = if (folder.latestThumbnail.startsWith("content://")) Uri.parse(folder.latestThumbnail) else File(folder.latestThumbnail)
+                AsyncImage(
+                    model = model,
+                    contentDescription = folder.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
+                            )
+                        )
+                )
             } else {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(14.dp))
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(DarkPillBg),
                     contentAlignment = Alignment.Center
                 ) {
@@ -338,26 +488,45 @@ private fun FolderGridItem(
                         imageVector = Icons.Default.Folder,
                         contentDescription = null,
                         tint = TextWhite,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+            }
+
+            // Pinned indicator
+            if (folder.isPinned && !folder.isUltraPrivate) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                        .clip(CircleShape)
+                        .background(PureBlack.copy(alpha = 0.75f))
+                        .padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PushPin,
+                        contentDescription = "Pinned",
+                        tint = TextWhite,
+                        modifier = Modifier.size(11.dp)
                     )
                 }
             }
 
             // Item count badge
-            if (folder.itemCount > 0) {
+            if (!folder.isUltraPrivate && folder.itemCount > 0) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(6.dp)
                         .clip(CircleShape)
                         .background(PureBlack.copy(alpha = 0.75f))
-                        .padding(horizontal = 7.dp, vertical = 2.dp)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = "${folder.itemCount}",
                         color = TextWhite,
                         fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }
@@ -368,7 +537,7 @@ private fun FolderGridItem(
         Text(
             text = folder.name,
             color = TextWhite,
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -376,9 +545,9 @@ private fun FolderGridItem(
         )
 
         Text(
-            text = "${folder.itemCount} items",
+            text = if (folder.isUltraPrivate) "Ultra Private" else "${folder.itemCount} items",
             color = TextGray,
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             maxLines = 1,
             textAlign = TextAlign.Center
         )
@@ -399,7 +568,7 @@ private fun EmptyFoldersState(
     ) {
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(68.dp)
                 .clip(CircleShape)
                 .background(DarkCardBg),
             contentAlignment = Alignment.Center
@@ -408,48 +577,51 @@ private fun EmptyFoldersState(
                 imageVector = if (isSearch) Icons.Default.Search else Icons.Outlined.CreateNewFolder,
                 contentDescription = null,
                 tint = TextWhite,
-                modifier = Modifier.size(38.dp)
+                modifier = Modifier.size(32.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = if (isSearch) "No folders found" else "Start creating folders",
             color = TextWhite,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = if (isSearch) "Try searching for another folder name." else "Organize your private photos and videos in custom secure folders.",
+            text = if (isSearch) "Try searching for another folder name." else "Organize private photos and videos in custom folders.",
             color = TextGray,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-            lineHeight = 20.sp
+            fontSize = 13.sp,
+            textAlign = TextAlign.Center
         )
 
         if (!isSearch) {
-            Spacer(modifier = Modifier.height(24.dp))
-            OpenSourcePressButton(
+            Spacer(modifier = Modifier.height(18.dp))
+            Button(
                 onClick = onCreateClick,
-                backgroundColor = TextWhite,
-                contentColor = PureBlack,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = TextWhite,
+                    contentColor = PureBlack
+                ),
+                shape = RoundedCornerShape(12.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
                 modifier = Modifier.testTag("empty_state_create_folder_button")
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
                     tint = PureBlack,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = "New Folder",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -479,106 +651,105 @@ fun CreateFolderBottomSheet(
         dragHandle = {
             BottomSheetDefaults.DragHandle(color = DarkBorder)
         },
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 36.dp)
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 28.dp)
         ) {
             Text(
                 text = "New Folder",
                 color = TextWhite,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 17.sp,
+                fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             OutlinedTextField(
                 value = folderName,
                 onValueChange = { folderName = it },
-                placeholder = { Text("Folder Name (auto-numbers if exists)", color = TextMuted) },
+                placeholder = { Text("Folder Name", color = TextMuted, fontSize = 13.sp) },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = TextWhite,
-                    unfocusedBorderColor = DarkBorder,
+                    focusedBorderColor = DarkBorder,
+                    unfocusedBorderColor = DarkBorder.copy(alpha = 0.5f),
                     focusedTextColor = TextWhite,
                     unfocusedTextColor = TextWhite,
                     cursorColor = TextWhite
                 ),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("new_folder_name_input")
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Optional cover image picker
+            // Cover image picker row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(DarkPillBg)
                     .clickable {
                         pickCoverLauncher.launch(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                         )
                     }
-                    .padding(14.dp),
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.Image,
                     contentDescription = null,
                     tint = TextWhite,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = if (selectedCoverUri != null) "Cover Photo Selected" else "Set Custom Cover (Optional)",
-                        color = TextWhite,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = if (selectedCoverUri != null) "Tap to change cover photo" else "If not set, latest photo will be shown automatically",
-                        color = TextGray,
-                        fontSize = 12.sp
-                    )
-                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = if (selectedCoverUri != null) "Cover Selected" else "Set cover",
+                    color = TextWhite,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                OpenSourcePressButton(
+                Button(
                     onClick = onDismiss,
-                    modifier = Modifier.weight(1f),
-                    backgroundColor = DarkPillBg,
-                    contentColor = TextWhite
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DarkPillBg,
+                        contentColor = TextWhite
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Text("Cancel", fontSize = 14.sp)
+                    Text("Cancel", fontSize = 13.sp)
                 }
 
-                OpenSourcePressButton(
+                Button(
                     onClick = {
                         val name = folderName.trim().ifEmpty { "New Folder" }
                         onConfirm(name, selectedCoverUri)
                     },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TextWhite,
+                        contentColor = PureBlack
+                    ),
+                    shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .testTag("create_folder_submit_button"),
-                    backgroundColor = TextWhite,
-                    contentColor = PureBlack
+                        .testTag("create_folder_submit_button")
                 ) {
-                    Text("Create", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("Create", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

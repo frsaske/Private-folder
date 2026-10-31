@@ -60,7 +60,7 @@ fun SettingsScreen(
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
         triggerHapticFeedback(context)
-        Toast.makeText(context, "Copied \"$text\" to clipboard", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Copied \"$text\"", Toast.LENGTH_SHORT).show()
     }
 
     BackHandler {
@@ -74,13 +74,13 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(horizontal = 20.dp, vertical = 14.dp)
+                    .padding(horizontal = 20.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = "Settings",
                     color = TextWhite,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         },
@@ -92,46 +92,44 @@ fun SettingsScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // App Hero Card (Matching user screenshot!)
+            // App Hero Card matching PinterestDL style
             OpenSourceCard {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
+                    Image(
+                        painter = painterResource(id = R.drawable.app_icon),
+                        contentDescription = "App Icon",
                         modifier = Modifier
-                            .size(62.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(DarkPillBg),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.app_icon),
-                            contentDescription = "App Icon",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(16.dp))
-                        )
-                    }
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(14.dp))
 
                     Column {
                         Text(
                             text = "Private Folder",
                             color = TextWhite,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Version 1.0.0",
+                            color = TextGray,
+                            fontSize = 12.sp
                         )
                     }
                 }
             }
 
-            // APP INFO Section
+            // APP INFO
             SettingsSectionHeader(title = "APP INFO")
             OpenSourceCard {
                 OpenSourceSettingsRow(
@@ -143,7 +141,7 @@ fun SettingsScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = null,
                             tint = TextGray,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(13.dp)
                         )
                     },
                     showDivider = false,
@@ -151,11 +149,11 @@ fun SettingsScreen(
                 )
             }
 
-            // SECURITY Section
+            // SECURITY
             SettingsSectionHeader(title = "SECURITY")
             OpenSourceCard {
                 OpenSourceSettingsRow(
-                    title = "Security Recovery Email",
+                    title = "Security Email",
                     leadingIcon = Icons.Default.Security,
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
@@ -163,7 +161,7 @@ fun SettingsScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = null,
                             tint = TextGray,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(13.dp)
                         )
                     },
                     showDivider = true,
@@ -179,7 +177,7 @@ fun SettingsScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = null,
                             tint = TextGray,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(13.dp)
                         )
                     },
                     showDivider = true,
@@ -195,7 +193,7 @@ fun SettingsScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = null,
                             tint = TextGray,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(13.dp)
                         )
                     },
                     showDivider = true,
@@ -213,7 +211,6 @@ fun SettingsScreen(
                         Switch(
                             checked = isAutoDeleteEnabled,
                             onCheckedChange = { checked ->
-                                triggerHapticFeedback(context)
                                 isAutoDeleteEnabled = checked
                                 securityPrefs.isAutoDeleteFromGalleryEnabled = checked
                             },
@@ -228,7 +225,6 @@ fun SettingsScreen(
                     },
                     showDivider = true,
                     onClick = {
-                        triggerHapticFeedback(context)
                         val newValue = !isAutoDeleteEnabled
                         isAutoDeleteEnabled = newValue
                         securityPrefs.isAutoDeleteFromGalleryEnabled = newValue
@@ -244,13 +240,13 @@ fun SettingsScreen(
                             if (recycleBinCount > 0) {
                                 Box(
                                     modifier = Modifier
-                                        .background(TextWhite, RoundedCornerShape(10.dp))
-                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                        .background(TextWhite, RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 7.dp, vertical = 2.dp)
                                 ) {
                                     Text(
                                         text = "$recycleBinCount",
                                         color = PureBlack,
-                                        fontSize = 12.sp,
+                                        fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -260,7 +256,7 @@ fun SettingsScreen(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                                 contentDescription = null,
                                 tint = TextGray,
-                                modifier = Modifier.size(14.dp)
+                                modifier = Modifier.size(13.dp)
                             )
                         }
                     },
@@ -269,7 +265,7 @@ fun SettingsScreen(
                 )
             }
 
-            // DEVELOPER & CONTACT Section
+            // DEVELOPER & CONTACT
             SettingsSectionHeader(title = "DEVELOPER & CONTACT")
             OpenSourceCard {
                 OpenSourceSettingsRow(
@@ -278,19 +274,19 @@ fun SettingsScreen(
                     iconBackgroundColor = DarkPillBg,
                     trailingContent = {
                         IconButton(
-                            onClick = { copyToClipboard("Developer Info", "sasuke - Sasuke.winx@gmail.com") },
-                            modifier = Modifier.size(36.dp).testTag("copy_developer_button")
+                            onClick = { copyToClipboard("Developer", "sasuke - Sasuke.winx@gmail.com") },
+                            modifier = Modifier.size(32.dp).testTag("copy_developer_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "Copy Developer",
+                                contentDescription = "Copy",
                                 tint = TextWhite,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     },
                     showDivider = true,
-                    onClick = { copyToClipboard("Developer Info", "sasuke - Sasuke.winx@gmail.com") }
+                    onClick = { copyToClipboard("Developer", "sasuke - Sasuke.winx@gmail.com") }
                 )
 
                 OpenSourceSettingsRow(
@@ -301,10 +297,10 @@ fun SettingsScreen(
                         Text(
                             text = "Sasuke.winx@gmail.com",
                             color = TextGray,
-                            fontSize = 13.sp
+                            fontSize = 12.sp
                         )
                     },
-                    showDivider = false,
+                    showDivider = true,
                     onClick = {
                         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                             data = Uri.parse("mailto:Sasuke.winx@gmail.com")
@@ -312,18 +308,47 @@ fun SettingsScreen(
                         }
                         try {
                             context.startActivity(emailIntent)
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             copyToClipboard("Email", "Sasuke.winx@gmail.com")
                         }
+                    }
+                )
+
+                OpenSourceSettingsRow(
+                    title = "Get Source Code",
+                    leadingIcon = Icons.Default.Code,
+                    iconBackgroundColor = DarkPillBg,
+                    trailingContent = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                            contentDescription = null,
+                            tint = TextGray,
+                            modifier = Modifier.size(13.dp)
+                        )
+                    },
+                    showDivider = false,
+                    onClick = {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/devsasuke/Private-folder/"))
+                            context.startActivity(intent)
+                        } catch (_: Exception) {}
                     }
                 )
             }
 
             // Lock Vault Now Button
-            OpenSourcePressButton(
-                onClick = onLockAppNow,
-                backgroundColor = DarkCardBg,
-                contentColor = TextWhite,
+            Button(
+                onClick = {
+                    triggerHapticFeedback(context)
+                    onLockAppNow()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = DarkCardBg,
+                    contentColor = TextWhite
+                ),
+                shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder.copy(alpha = 0.5f)),
+                contentPadding = PaddingValues(vertical = 12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
@@ -333,17 +358,17 @@ fun SettingsScreen(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
                     tint = TextWhite,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Lock Vault Now",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 
@@ -357,7 +382,7 @@ fun SettingsScreen(
             onDismiss = { showSecurityEmailDialog = false },
             onSaved = {
                 showSecurityEmailDialog = false
-                Toast.makeText(context, "Recovery email saved securely", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Recovery email saved", Toast.LENGTH_SHORT).show()
             }
         )
     }
@@ -368,7 +393,7 @@ fun SettingsScreen(
             onDismiss = { showChangePinDialog = false },
             onSuccess = {
                 showChangePinDialog = false
-                Toast.makeText(context, "PIN updated successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Passcode updated", Toast.LENGTH_SHORT).show()
             }
         )
     }
@@ -379,10 +404,10 @@ private fun SettingsSectionHeader(title: String) {
     Text(
         text = title,
         color = TextGray,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Bold,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.5.sp,
-        modifier = Modifier.padding(start = 8.dp)
+        modifier = Modifier.padding(start = 4.dp)
     )
 }
 
@@ -397,7 +422,7 @@ fun SecurityEmailDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(20.dp),
             color = DarkCardBg,
             border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
             modifier = Modifier.padding(16.dp)
@@ -405,44 +430,36 @@ fun SecurityEmailDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
+                Image(
+                    painter = painterResource(id = R.drawable.app_icon),
+                    contentDescription = null,
                     modifier = Modifier
-                        .size(54.dp)
-                        .clip(CircleShape)
-                        .background(DarkPillBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = null,
-                        tint = TextWhite,
-                        modifier = Modifier.size(26.dp)
-                    )
-                }
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Security Recovery Email",
+                    color = TextWhite,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Enter a recovery email for resetting your PIN if forgotten. This email is never displayed in the app.",
+                    color = TextGray,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center
+                )
 
                 Spacer(modifier = Modifier.height(14.dp))
-
-                Text(
-                    text = "Add Security Email",
-                    color = TextWhite,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Enter a recovery email for resetting your PIN if forgotten. For your privacy, this email is never displayed in the app.",
-                    color = TextGray,
-                    fontSize = 13.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 18.sp
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
 
                 OutlinedTextField(
                     value = emailInput,
@@ -450,16 +467,16 @@ fun SecurityEmailDialog(
                         emailInput = it
                         errorText = null
                     },
-                    placeholder = { Text("Enter security email", color = TextMuted) },
+                    placeholder = { Text("Recovery email address", color = TextMuted, fontSize = 13.sp) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TextWhite,
-                        unfocusedBorderColor = DarkBorder,
+                        focusedBorderColor = DarkBorder,
+                        unfocusedBorderColor = DarkBorder.copy(alpha = 0.5f),
                         focusedTextColor = TextWhite,
                         unfocusedTextColor = TextWhite,
                         cursorColor = TextWhite
                     ),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth().testTag("security_email_input")
                 )
 
@@ -472,22 +489,25 @@ fun SecurityEmailDialog(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(22.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    OpenSourcePressButton(
+                    Button(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        backgroundColor = DarkPillBg,
-                        contentColor = TextWhite
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = DarkPillBg,
+                            contentColor = TextWhite
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel", fontSize = 14.sp)
+                        Text("Cancel", fontSize = 13.sp)
                     }
 
-                    OpenSourcePressButton(
+                    Button(
                         onClick = {
                             val trimmed = emailInput.trim()
                             if (trimmed.isEmpty() || !trimmed.contains("@") || !trimmed.contains(".")) {
@@ -497,11 +517,14 @@ fun SecurityEmailDialog(
                                 onSaved()
                             }
                         },
-                        modifier = Modifier.weight(1f).testTag("save_security_email_button"),
-                        backgroundColor = TextWhite,
-                        contentColor = PureBlack
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TextWhite,
+                            contentColor = PureBlack
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1f).testTag("save_security_email_button")
                     ) {
-                        Text("Save", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text("Save", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -522,7 +545,7 @@ fun ChangePinDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(20.dp),
             color = DarkCardBg,
             border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
             modifier = Modifier.padding(16.dp)
@@ -530,32 +553,32 @@ fun ChangePinDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Change Passcode",
                     color = TextWhite,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 OutlinedTextField(
                     value = oldPin,
                     onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) oldPin = it },
-                    placeholder = { Text("Current 4-digit PIN", color = TextMuted) },
+                    placeholder = { Text("Current 4-digit PIN", color = TextMuted, fontSize = 13.sp) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TextWhite,
-                        unfocusedBorderColor = DarkBorder,
+                        focusedBorderColor = DarkBorder,
+                        unfocusedBorderColor = DarkBorder.copy(alpha = 0.5f),
                         focusedTextColor = TextWhite,
                         unfocusedTextColor = TextWhite,
                         cursorColor = TextWhite
                     ),
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth().testTag("current_pin_input")
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().testTag("change_pin_old_input")
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -563,17 +586,17 @@ fun ChangePinDialog(
                 OutlinedTextField(
                     value = newPin,
                     onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) newPin = it },
-                    placeholder = { Text("New 4-digit PIN", color = TextMuted) },
+                    placeholder = { Text("New 4-digit PIN", color = TextMuted, fontSize = 13.sp) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TextWhite,
-                        unfocusedBorderColor = DarkBorder,
+                        focusedBorderColor = DarkBorder,
+                        unfocusedBorderColor = DarkBorder.copy(alpha = 0.5f),
                         focusedTextColor = TextWhite,
                         unfocusedTextColor = TextWhite,
                         cursorColor = TextWhite
                     ),
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth().testTag("new_pin_input")
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().testTag("change_pin_new_input")
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -581,17 +604,17 @@ fun ChangePinDialog(
                 OutlinedTextField(
                     value = confirmNewPin,
                     onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) confirmNewPin = it },
-                    placeholder = { Text("Confirm new 4-digit PIN", color = TextMuted) },
+                    placeholder = { Text("Confirm new 4-digit PIN", color = TextMuted, fontSize = 13.sp) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TextWhite,
-                        unfocusedBorderColor = DarkBorder,
+                        focusedBorderColor = DarkBorder,
+                        unfocusedBorderColor = DarkBorder.copy(alpha = 0.5f),
                         focusedTextColor = TextWhite,
                         unfocusedTextColor = TextWhite,
                         cursorColor = TextWhite
                     ),
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth().testTag("confirm_new_pin_input")
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().testTag("change_pin_confirm_input")
                 )
 
                 if (errorText != null) {
@@ -599,26 +622,30 @@ fun ChangePinDialog(
                     Text(
                         text = errorText ?: "",
                         color = AccentRed,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    OpenSourcePressButton(
+                    Button(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        backgroundColor = DarkPillBg,
-                        contentColor = TextWhite
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = DarkPillBg,
+                            contentColor = TextWhite
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel", fontSize = 14.sp)
+                        Text("Cancel", fontSize = 13.sp)
                     }
 
-                    OpenSourcePressButton(
+                    Button(
                         onClick = {
                             if (!securityPrefs.verifyPin(oldPin)) {
                                 errorText = "Current PIN is incorrect."
@@ -631,11 +658,14 @@ fun ChangePinDialog(
                                 onSuccess()
                             }
                         },
-                        modifier = Modifier.weight(1f).testTag("save_pin_button"),
-                        backgroundColor = TextWhite,
-                        contentColor = PureBlack
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TextWhite,
+                            contentColor = PureBlack
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1f).testTag("change_pin_submit_button")
                     ) {
-                        Text("Update", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text("Update", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }

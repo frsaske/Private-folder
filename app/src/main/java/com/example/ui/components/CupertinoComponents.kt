@@ -312,54 +312,54 @@ fun OpenSourceAboutDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(20.dp),
             color = DarkCardBg,
             border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.app_icon),
+                    contentDescription = "App Icon",
                     modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(DarkPillBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "🔒", fontSize = 26.sp)
-                }
-                Spacer(modifier = Modifier.height(16.dp))
+                        .size(52.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                )
+                Spacer(modifier = Modifier.height(14.dp))
                 Text(
                     text = "Private Folder",
                     color = TextWhite,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "This app is made by sasuke. Using this app you can hide and secure your pics and videos. No ads, 100% open-source and free forever. Love from sasuke.",
+                    text = "Created by sasuke. Secure vault for photos and videos with private storage, zero ads, and 100% open-source.",
                     color = TextGray,
-                    fontSize = 14.sp,
-                    lineHeight = 22.sp,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
                     textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.height(24.dp))
-                OpenSourcePressButton(
+                Spacer(modifier = Modifier.height(18.dp))
+                Button(
                     onClick = onDismiss,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("about_dialog_close_button"),
-                    backgroundColor = TextWhite,
-                    contentColor = PureBlack
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DarkPillBg,
+                        contentColor = TextWhite
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(horizontal = 28.dp, vertical = 8.dp),
+                    modifier = Modifier.testTag("about_dialog_close_button")
                 ) {
                     Text(
                         text = "Close",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }

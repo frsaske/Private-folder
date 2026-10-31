@@ -25,7 +25,8 @@ enum class Screen {
     GALLERY,
     MEDIA_VIEWER,
     SETTINGS,
-    RECYCLE_BIN
+    RECYCLE_BIN,
+    ULTRA_PRIVATE
 }
 
 class VaultViewModel(application: Application) : AndroidViewModel(application) {
@@ -42,6 +43,9 @@ class VaultViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _folders = MutableStateFlow<List<FolderWithItemCount>>(emptyList())
     val folders: StateFlow<List<FolderWithItemCount>> = _folders.asStateFlow()
+
+    private val _ultraPrivateFolders = MutableStateFlow<List<FolderWithItemCount>>(emptyList())
+    val ultraPrivateFolders: StateFlow<List<FolderWithItemCount>> = _ultraPrivateFolders.asStateFlow()
 
     private val _currentFolder = MutableStateFlow<FolderWithItemCount?>(null)
     val currentFolder: StateFlow<FolderWithItemCount?> = _currentFolder.asStateFlow()
@@ -91,33 +95,52 @@ class VaultViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     init {
-        // Collect folders
+        // Ensure the permanent Ultra Private folder is seeded in MAIN space
         viewModelScope.launch {
-            repository.getAllFoldersWithCount().collectLatest { list ->
+            repository.ensureUltraPrivateFolder()
+        }
+
+        // Collect folders for MAIN space
+        viewModelScope.launch {
+            repository.getAllFoldersWithCount("MAIN").collectLatest { list ->
                 _folders.value = list
                 _currentFolder.value?.let { current ->
-                    _currentFolder.value = list.find { it.id == current.id } ?: current
+                    if (current.space == "MAIN") {
+                        _currentFolder.value = list.find { it.id == current.id } ?: current
+                    }
                 }
             }
         }
 
-        // Collect all active media across all folders
+        // Collect folders for ULTRA_PRIVATE space
         viewModelScope.launch {
-            repository.getAllActiveMedia().collectLatest { list ->
+            repository.getAllFoldersWithCount("ULTRA_PRIVATE").collectLatest { list ->
+                _ultraPrivateFolders.value = list
+                _currentFolder.value?.let { current ->
+                    if (current.space == "ULTRA_PRIVATE") {
+                        _currentFolder.value = list.find { it.id == current.id } ?: current
+                    }
+                }
+            }
+        }
+
+        // Collect all active media across all folders in MAIN space
+        viewModelScope.launch {
+            repository.getAllActiveMedia("MAIN").collectLatest { list ->
                 _allActiveMedia.value = list
             }
         }
 
         // Collect recycle bin count
         viewModelScope.launch {
-            repository.getRecycleBinCount().collectLatest { count ->
+            repository.getRecycleBinCount("MAIN").collectLatest { count ->
                 _recycleBinCount.value = count
             }
         }
 
         // Collect recycle bin media
         viewModelScope.launch {
-            repository.getRecycleBinMedia().collectLatest { list ->
+            repository.getRecycleBinMedia("MAIN").collectLatest { list ->
                 _recycleBinMedia.value = list
             }
         }
@@ -190,6 +213,10 @@ class VaultViewModel(application: Application) : AndroidViewModel(application) {
         _currentScreen.value = Screen.RECYCLE_BIN
     }
 
+    fun openUltraPrivateSpace() {
+        _currentScreen.value = Screen.ULTRA_PRIVATE
+    }
+
     fun navigateBack() {
         when (_currentScreen.value) {
             Screen.MEDIA_VIEWER -> {
@@ -199,7 +226,14 @@ class VaultViewModel(application: Application) : AndroidViewModel(application) {
                     _currentScreen.value = Screen.GALLERY
                 }
             }
-            Screen.GALLERY -> _currentScreen.value = Screen.FOLDERS
+            Screen.GALLERY -> {
+                if (_currentFolder.value?.space == "ULTRA_PRIVATE") {
+                    _currentScreen.value = Screen.ULTRA_PRIVATE
+                } else {
+                    _currentScreen.value = Screen.FOLDERS
+                }
+            }
+            Screen.ULTRA_PRIVATE -> _currentScreen.value = Screen.FOLDERS
             Screen.RECYCLE_BIN -> _currentScreen.value = Screen.SETTINGS
             Screen.SETTINGS -> _currentScreen.value = Screen.FOLDERS
             Screen.ALL_FILES -> _currentScreen.value = Screen.FOLDERS
@@ -207,9 +241,15 @@ class VaultViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun createFolder(name: String, coverUri: String? = null, onCreated: ((FolderEntity) -> Unit)? = null) {
+    fun togglePinFolder(folderId: String, isPinned: Boolean) {
         viewModelScope.launch {
-            val folder = repository.createFolder(name, coverUri)
+            repository.togglePinFolder(folderId, isPinned)
+        }
+    }
+
+    fun createFolder(name: String, coverUri: String? = null, space: String = "MAIN", onCreated: ((FolderEntity) -> Unit)? = null) {
+        viewModelScope.launch {
+            val folder = repository.createFolder(name = name, coverUri = coverUri, space = space)
             onCreated?.invoke(folder)
         }
     }

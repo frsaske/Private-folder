@@ -12,6 +12,9 @@ data class FolderEntity(
     val coverUri: String? = null,
     val colorHex: String = "#0A84FF",
     val iconName: String = "folder",
+    val isPinned: Boolean = false,
+    val isUltraPrivate: Boolean = false,
+    val space: String = "MAIN",
     val isDeleted: Boolean = false,
     val deletedAt: Long? = null,
     val createdAt: Long = System.currentTimeMillis(),
@@ -32,6 +35,7 @@ data class MediaEntity(
     val width: Int = 0,
     val height: Int = 0,
     val isFavorite: Boolean = false,
+    val space: String = "MAIN",
     val isDeleted: Boolean = false,
     val deletedAt: Long? = null,
     val addedAt: Long = System.currentTimeMillis()

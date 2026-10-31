@@ -140,51 +140,42 @@ fun LockScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp),
+                .statusBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Header Lock Icon & Text
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 16.dp)
+                modifier = Modifier.padding(top = 12.dp)
             ) {
-                Box(
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.app_icon),
+                    contentDescription = "App Icon",
                     modifier = Modifier
-                        .size(72.dp)
-                        .clip(CircleShape)
-                        .background(DarkPillBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Lock",
-                        tint = TextWhite,
-                        modifier = Modifier.size(34.dp)
-                    )
-                }
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
                     text = "Private Folder",
                     color = TextWhite,
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-0.5).sp
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Enter 4-Digit Passcode",
+                    text = "Enter 4-digit passcode",
                     color = TextGray,
-                    fontSize = 15.sp
+                    fontSize = 13.sp
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 PinDotsIndicator(
                     pinLength = enteredPin.length,
@@ -195,9 +186,9 @@ fun LockScreen(
                     Text(
                         text = errorMessage ?: "",
                         color = AccentRed,
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(top = 14.dp)
+                        modifier = Modifier.padding(top = 10.dp)
                     )
                 }
             }
@@ -208,21 +199,21 @@ fun LockScreen(
                 onDeleteClick = { onDelete() },
                 onBiometricClick = { triggerBiometrics() },
                 showBiometric = securityPrefs.isBiometricsEnabled,
-                modifier = Modifier.padding(bottom = 12.dp)
+                modifier = Modifier.padding(bottom = 6.dp)
             )
 
             // Forgot PIN
             TextButton(
                 onClick = { showForgotDialog = true },
                 modifier = Modifier
-                    .padding(bottom = 24.dp)
+                    .padding(bottom = 12.dp)
                     .testTag("forgot_pin_button")
             ) {
                 Text(
                     text = "Forgot PIN?",
-                    color = TextWhite,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
+                    color = TextGray,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -255,55 +246,48 @@ fun ForgotPinDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(20.dp),
             color = DarkCardBg,
             border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.app_icon),
+                    contentDescription = null,
                     modifier = Modifier
-                        .size(54.dp)
-                        .clip(CircleShape)
-                        .background(DarkPillBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (isEmailVerified) Icons.Default.LockOpen else Icons.Outlined.Mail,
-                        contentDescription = null,
-                        tint = TextWhite,
-                        modifier = Modifier.size(26.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = if (!isEmailVerified) "PIN Recovery" else "Set New 4-Digit PIN",
-                    color = TextWhite,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(10.dp))
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = if (!isEmailVerified) "Reset Passcode" else "Set New 4-Digit PIN",
+                    color = TextWhite,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = if (!isEmailVerified) {
-                        "Enter your security recovery email to verify identity and reset your passcode."
+                        "Enter registered recovery email to verify identity."
                     } else {
                         "Enter and confirm your new 4-digit PIN."
                     },
                     color = TextGray,
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 if (!isEmailVerified) {
                     OutlinedTextField(
@@ -312,16 +296,16 @@ fun ForgotPinDialog(
                             emailInput = it
                             dialogError = null
                         },
-                        placeholder = { Text("Enter your recovery email", color = TextMuted, fontSize = 14.sp) },
+                        placeholder = { Text("Recovery email", color = TextMuted, fontSize = 13.sp) },
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = TextWhite,
-                            unfocusedBorderColor = DarkBorder,
+                            focusedBorderColor = DarkBorder,
+                            unfocusedBorderColor = DarkBorder.copy(alpha = 0.5f),
                             focusedTextColor = TextWhite,
                             unfocusedTextColor = TextWhite,
                             cursorColor = TextWhite
                         ),
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("recovery_email_input")
@@ -330,34 +314,34 @@ fun ForgotPinDialog(
                     OutlinedTextField(
                         value = newPin,
                         onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) newPin = it },
-                        placeholder = { Text("New 4-Digit PIN", color = TextMuted) },
+                        placeholder = { Text("New 4-digit PIN", color = TextMuted, fontSize = 13.sp) },
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = TextWhite,
-                            unfocusedBorderColor = DarkBorder,
+                            focusedBorderColor = DarkBorder,
+                            unfocusedBorderColor = DarkBorder.copy(alpha = 0.5f),
                             focusedTextColor = TextWhite,
                             unfocusedTextColor = TextWhite,
                             cursorColor = TextWhite
                         ),
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().testTag("new_pin_input")
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
                         value = confirmPin,
                         onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) confirmPin = it },
-                        placeholder = { Text("Confirm 4-Digit PIN", color = TextMuted) },
+                        placeholder = { Text("Confirm 4-digit PIN", color = TextMuted, fontSize = 13.sp) },
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = TextWhite,
-                            unfocusedBorderColor = DarkBorder,
+                            focusedBorderColor = DarkBorder,
+                            unfocusedBorderColor = DarkBorder.copy(alpha = 0.5f),
                             focusedTextColor = TextWhite,
                             unfocusedTextColor = TextWhite,
                             cursorColor = TextWhite
                         ),
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().testTag("confirm_pin_input")
                     )
                 }
@@ -372,29 +356,32 @@ fun ForgotPinDialog(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    OpenSourcePressButton(
+                    Button(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        backgroundColor = DarkPillBg,
-                        contentColor = TextWhite
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = DarkPillBg,
+                            contentColor = TextWhite
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel", fontSize = 14.sp)
+                        Text("Cancel", fontSize = 13.sp)
                     }
 
-                    OpenSourcePressButton(
+                    Button(
                         onClick = {
                             if (!isEmailVerified) {
                                 if (securityPrefs.verifyRecoveryEmail(emailInput)) {
                                     isEmailVerified = true
                                     dialogError = null
                                 } else {
-                                    dialogError = "Email did not match registered recovery address."
+                                    dialogError = "Email did not match registered address."
                                 }
                             } else {
                                 if (newPin.length != 4) {
@@ -407,11 +394,14 @@ fun ForgotPinDialog(
                                 }
                             }
                         },
-                        modifier = Modifier.weight(1f).testTag("dialog_confirm_button"),
-                        backgroundColor = TextWhite,
-                        contentColor = PureBlack
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TextWhite,
+                            contentColor = PureBlack
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1f).testTag("dialog_confirm_button")
                     ) {
-                        Text(if (!isEmailVerified) "Verify" else "Save PIN", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(if (!isEmailVerified) "Verify" else "Save PIN", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }

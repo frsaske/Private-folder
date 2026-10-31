@@ -29,31 +29,60 @@ class MediaRepository(private val context: Context) {
     private val folderDao = db.folderDao()
     private val mediaDao = db.mediaDao()
 
-    fun getAllFoldersWithCount(): Flow<List<FolderWithItemCount>> =
-        folderDao.getAllFoldersWithCount()
+    fun getAllFoldersWithCount(space: String = "MAIN"): Flow<List<FolderWithItemCount>> =
+        folderDao.getFoldersForSpaceWithCount(space)
 
     fun getMediaForFolder(folderId: String): Flow<List<MediaEntity>> =
         mediaDao.getMediaForFolder(folderId)
 
-    fun getAllActiveMedia(): Flow<List<MediaEntity>> =
-        mediaDao.getAllActiveMedia()
+    fun getAllActiveMedia(space: String = "MAIN"): Flow<List<MediaEntity>> =
+        mediaDao.getAllActiveMedia(space)
 
-    fun getAllActivePhotos(): Flow<List<MediaEntity>> =
-        mediaDao.getAllActivePhotos()
+    fun getAllActivePhotos(space: String = "MAIN"): Flow<List<MediaEntity>> =
+        mediaDao.getAllActivePhotos(space)
 
-    fun getAllActiveVideos(): Flow<List<MediaEntity>> =
-        mediaDao.getAllActiveVideos()
+    fun getAllActiveVideos(space: String = "MAIN"): Flow<List<MediaEntity>> =
+        mediaDao.getAllActiveVideos(space)
 
-    fun getRecycleBinMedia(): Flow<List<MediaEntity>> =
-        mediaDao.getRecycleBinMedia()
+    fun getRecycleBinMedia(space: String = "MAIN"): Flow<List<MediaEntity>> =
+        mediaDao.getRecycleBinMedia(space)
 
     fun getRecycleBinFolders(): Flow<List<FolderEntity>> =
         folderDao.getRecycleBinFolders()
 
-    fun getRecycleBinCount(): Flow<Int> =
-        mediaDao.getRecycleBinCount()
+    fun getRecycleBinCount(space: String = "MAIN"): Flow<Int> =
+        mediaDao.getRecycleBinCount(space)
 
-    suspend fun createFolder(name: String, coverUri: String? = null, colorHex: String = "#FFFFFF", iconName: String = "folder"): FolderEntity = withContext(Dispatchers.IO) {
+    suspend fun togglePinFolder(folderId: String, isPinned: Boolean) = withContext(Dispatchers.IO) {
+        folderDao.updateFolderPinned(folderId, isPinned)
+    }
+
+    suspend fun ensureUltraPrivateFolder() = withContext(Dispatchers.IO) {
+        val existing = folderDao.getFolderById("ultra_private_root")
+        if (existing == null) {
+            folderDao.insertFolder(
+                FolderEntity(
+                    id = "ultra_private_root",
+                    name = "Ultra Private",
+                    coverUri = null,
+                    colorHex = "#FF2D55",
+                    iconName = "app_icon",
+                    isPinned = true,
+                    isUltraPrivate = true,
+                    space = "MAIN"
+                )
+            )
+        }
+    }
+
+    suspend fun createFolder(
+        name: String,
+        coverUri: String? = null,
+        colorHex: String = "#FFFFFF",
+        iconName: String = "folder",
+        space: String = "MAIN",
+        isUltraPrivate: Boolean = false
+    ): FolderEntity = withContext(Dispatchers.IO) {
         val baseName = name.trim().ifEmpty { "New Folder" }
         val existingNames = folderDao.getAllFolderNames()
         var finalName = baseName
@@ -69,10 +98,28 @@ class MediaRepository(private val context: Context) {
             name = finalName,
             coverUri = coverUri,
             colorHex = colorHex,
-            iconName = iconName
+            iconName = iconName,
+            space = space,
+            isUltraPrivate = isUltraPrivate
         )
         folderDao.insertFolder(folder)
         folder
+    }
+
+    private fun getPrivateStorageDir(folderName: String): File {
+        val safeName = folderName.replace(Regex("[^a-zA-Z0-9._-]"), "_").ifEmpty { "general" }
+        val base = context.getExternalFilesDir(null) ?: context.filesDir
+        val privateStorageRoot = File(base, "private-storage")
+        if (!privateStorageRoot.exists()) {
+            privateStorageRoot.mkdirs()
+            try { File(privateStorageRoot, ".nomedia").createNewFile() } catch (_: Exception) {}
+        }
+        val folderDir = File(privateStorageRoot, safeName)
+        if (!folderDir.exists()) {
+            folderDir.mkdirs()
+            try { File(folderDir, ".nomedia").createNewFile() } catch (_: Exception) {}
+        }
+        return folderDir
     }
 
     suspend fun setFolderCover(folderId: String, coverUri: String?) = withContext(Dispatchers.IO) {
@@ -92,9 +139,12 @@ class MediaRepository(private val context: Context) {
 
     suspend fun deleteFolderPermanently(folderId: String) = withContext(Dispatchers.IO) {
         try {
-            val folderDir = File(context.filesDir, "vault/$folderId")
-            if (folderDir.exists()) {
-                folderDir.deleteRecursively()
+            val folder = folderDao.getFolderById(folderId)
+            if (folder != null) {
+                val folderDir = getPrivateStorageDir(folder.name)
+                if (folderDir.exists()) {
+                    folderDir.deleteRecursively()
+                }
             }
         } catch (e: Exception) {
             Log.e("MediaRepository", "Error deleting folder directory: $folderId", e)
@@ -108,10 +158,10 @@ class MediaRepository(private val context: Context) {
         uris: List<Uri>,
         onProgress: (current: Int, total: Int) -> Unit
     ): List<MediaEntity> = withContext(Dispatchers.IO) {
-        val vaultDir = File(context.filesDir, "vault/$folderId")
-        if (!vaultDir.exists()) {
-            vaultDir.mkdirs()
-        }
+        val folder = folderDao.getFolderById(folderId)
+        val folderName = folder?.name ?: "folder_$folderId"
+        val targetSpace = folder?.space ?: "MAIN"
+        val storageDir = getPrivateStorageDir(folderName)
 
         val contentResolver: ContentResolver = context.contentResolver
         val importedList = mutableListOf<MediaEntity>()
@@ -123,8 +173,10 @@ class MediaRepository(private val context: Context) {
                 val originalName = queryFileName(contentResolver, uri) ?: "media_${System.currentTimeMillis()}"
 
                 val extension = if (isVideo) ".mp4" else ".jpg"
-                val destFile = File(vaultDir, "${UUID.randomUUID()}$extension")
+                val safeFileName = "${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(8)}$extension"
+                val destFile = File(storageDir, safeFileName)
 
+                // Copy 1:1 original data without quality loss or resizing
                 contentResolver.openInputStream(uri)?.use { input ->
                     FileOutputStream(destFile).use { output ->
                         input.copyTo(output)
@@ -158,7 +210,8 @@ class MediaRepository(private val context: Context) {
                     durationMs = duration,
                     fileSizeBytes = destFile.length(),
                     width = width,
-                    height = height
+                    height = height,
+                    space = targetSpace
                 )
                 mediaDao.insertMedia(media)
                 importedList.add(media)
@@ -174,6 +227,7 @@ class MediaRepository(private val context: Context) {
 
         importedList
     }
+
 
     private fun queryFileName(resolver: ContentResolver, uri: Uri): String? {
         return try {

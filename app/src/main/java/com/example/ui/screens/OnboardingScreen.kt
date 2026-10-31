@@ -105,20 +105,13 @@ fun OnboardingScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(top = 32.dp)
                         ) {
-                            Box(
+                            androidx.compose.foundation.Image(
+                                painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.app_icon),
+                                contentDescription = "Private Folder",
                                 modifier = Modifier
-                                    .size(80.dp)
-                                    .clip(CircleShape)
-                                    .background(DarkPillBg),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Security,
-                                    contentDescription = "Private Folder",
-                                    tint = TextWhite,
-                                    modifier = Modifier.size(42.dp)
-                                )
-                            }
+                                    .size(72.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                            )
 
                             Spacer(modifier = Modifier.height(24.dp))
 
